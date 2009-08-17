@@ -24,7 +24,10 @@ def captcha_image(request,key):
         charimage = Image.new('L', font.getsize(' %s '%char), '#000000')
         chardraw = ImageDraw.Draw(charimage)
         chardraw.text((0,0), ' %s '%char, font=font, fill='#ffffff')
-        charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), expand=0, resample=Image.BICUBIC)
+        if hasattr(Image,'VERSION') and int(Image.VERSION.replace('.','')) >= 116:
+            charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), expand=0, resample=Image.BICUBIC)
+        else:
+            charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), resample=Image.BICUBIC)
         charimage = charimage.crop(charimage.getbbox())
         maskimage = Image.new('L', size)
         
