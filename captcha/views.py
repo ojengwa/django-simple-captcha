@@ -4,6 +4,9 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 import Image,ImageDraw,ImageFont,ImageFilter,random
 from captcha.conf import settings
+import re
+
+NON_DIGITS_RX = re.compile('[^\d]')
 
 def captcha_image(request,key):
     store = get_object_or_404(CaptchaStore,hashkey=key)
@@ -18,13 +21,20 @@ def captcha_image(request,key):
     size = (size[0]*2,size[1])
     image = Image.new('RGB', size , settings.CAPTCHA_BACKGROUND_COLOR)
     
+    try:
+        PIL_VERSION = int(NON_DIGITS_RX.sub('',Image.VERSION))
+    except:
+        PIL_VERSION = 116
+    
+    
+    
     xpos = 2
     for char in text:
         fgimage = Image.new('RGB', size, settings.CAPTCHA_FOREGROUND_COLOR)
         charimage = Image.new('L', font.getsize(' %s '%char), '#000000')
         chardraw = ImageDraw.Draw(charimage)
         chardraw.text((0,0), ' %s '%char, font=font, fill='#ffffff')
-        if hasattr(Image,'VERSION') and int(Image.VERSION.replace('.','')) >= 116:
+        if PIL_VERSION >= 116:
             charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), expand=0, resample=Image.BICUBIC)
         else:
             charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), resample=Image.BICUBIC)
