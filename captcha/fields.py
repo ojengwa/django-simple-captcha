@@ -46,6 +46,12 @@ class CaptchaField(MultiValueField):
             CharField(show_hidden_initial=True), 
             CharField(),
         )
+        if 'error_messages' not in kwargs or 'invalid' not in kwargs.get('error_messages'):
+            if 'error_messages' not in kwargs:
+                kwargs['error_messages'] = dict()
+            kwargs['error_messages'].update(dict(invalid=_('Invalid CAPTCHA')))
+
+            
         super(CaptchaField,self).__init__(fields=fields, *args, **kwargs)
     
     def compress(self,data_list):
@@ -61,5 +67,5 @@ class CaptchaField(MultiValueField):
             store = CaptchaStore.objects.get(response=response,hashkey=value[0], expiration__gt=datetime.datetime.now())
             store.delete()
         except Exception:
-            raise ValidationError(_('Invalid CAPTCHA'))
+            raise ValidationError(getattr(self,'error_messages',dict()).get('invalid', _('Invalid CAPTCHA')))
         return value

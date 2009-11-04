@@ -78,4 +78,15 @@ class CaptchaCase(TestCase):
             self.fail()
         except:
             pass
+    
+    def testCustomErrorMessage(self):
+        r = self.client.get(reverse('captcha-test-custom-error-message'))
+        self.failUnlessEqual(r.status_code, 200)
+        
+        # Wrong answer
+        r = self.client.post(reverse('captcha-test-custom-error-message'), dict(captcha_0='abc',captcha_1='wrong response'))
+        self.assertFormError(r,'form','captcha','TEST CUSTOM ERROR MESSAGE')
+        # empty answer
+        r = self.client.post(reverse('captcha-test-custom-error-message'), dict(captcha_0='abc',captcha_1=''))
+        self.assertFormError(r,'form','captcha',_('This field is required.'))
         

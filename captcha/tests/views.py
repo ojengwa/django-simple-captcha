@@ -40,3 +40,19 @@ def test(request):
         
     t = loader.get_template_from_string(TEST_TEMPLATE)
     return HttpResponse(t.render(RequestContext(request, locals())))
+
+
+def test_custom_error_message(request):
+
+    class CaptchaTestForm(forms.Form):
+        captcha = CaptchaField(help_text='asdasd', error_messages=dict(invalid='TEST CUSTOM ERROR MESSAGE'))
+
+    if request.POST:
+        form = CaptchaTestForm(request.POST)
+        if form.is_valid():
+            passed = True
+    else:
+        form = CaptchaTestForm()
+
+    t = loader.get_template_from_string(TEST_TEMPLATE)
+    return HttpResponse(t.render(RequestContext(request, locals())))
