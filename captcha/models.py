@@ -11,7 +11,7 @@ except ImportError:
 class CaptchaStore(models.Model):
     challenge = models.CharField(blank=False, max_length=32)
     response = models.CharField(blank=False, max_length=32)
-    hashkey = models.CharField(blank=False, max_length=40,unique=True)
+    hashkey = models.CharField(blank=False, max_length=40, unique=True)
     expiration = models.DateTimeField(blank=False)
     
     def save(self,*args,**kwargs):

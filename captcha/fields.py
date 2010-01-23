@@ -25,7 +25,7 @@ class CaptchaTextInput(MultiWidget):
     def render(self, name, value, attrs=None):
         challenge,response= settings.get_challenge()()
         
-        store, created = CaptchaStore.objects.get_or_create(challenge=challenge,response=response)
+        store = CaptchaStore.objects.create(challenge=challenge,response=response)
         key = store.hashkey
         value = [key, u'']
         
@@ -64,7 +64,7 @@ class CaptchaField(MultiValueField):
         response, value[1] = value[1].strip().lower(), ''
         CaptchaStore.remove_expired()
         try:
-            store = CaptchaStore.objects.get(response=response,hashkey=value[0], expiration__gt=datetime.datetime.now())
+            store = CaptchaStore.objects.get(response=response, hashkey=value[0], expiration__gt=datetime.datetime.now())
             store.delete()
         except Exception:
             raise ValidationError(getattr(self,'error_messages',dict()).get('invalid', _('Invalid CAPTCHA')))

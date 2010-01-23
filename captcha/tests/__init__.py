@@ -100,3 +100,39 @@ class CaptchaCase(TestCase):
         except Exception:
             self.fail()
         
+    def testRepeatedChallengeFormSubmit(self):   
+        settings.CAPTCHA_CHALLENGE_FUNCT = 'captcha.tests.trivial_challenge'     
+        
+        r1 = self.client.get(reverse('captcha-test'))
+        r2 = self.client.get(reverse('captcha-test'))
+        self.failUnlessEqual(r1.status_code, 200)
+        self.failUnlessEqual(r2.status_code, 200)
+        hash_1 = r1.content[r1.content.find('value="')+7:r1.content.find('value="')+47]
+        hash_2 = r2.content[r2.content.find('value="')+7:r2.content.find('value="')+47]
+        try:
+            store_1 = CaptchaStore.objects.get(hashkey=hash_1)
+            store_2 = CaptchaStore.objects.get(hashkey=hash_2)
+        except:
+            self.fail()
+        
+        self.assertTrue(store_1.pk != store_2.pk)
+        self.assertTrue(store_1.response == store_2.response)
+        self.assertTrue(hash_1 != hash_2)
+        
+        
+
+        r1 = self.client.post(reverse('captcha-test'), dict(captcha_0=hash_1,captcha_1=store_1.response, subject='xxx', sender='asasd@asdasd.com'))
+        self.failUnlessEqual(r1.status_code, 200)
+        self.assertTrue(r1.content.find('Form validated') > 0)
+        
+        try:
+            store_2 = CaptchaStore.objects.get(hashkey=hash_2)
+        except:
+            self.fail()
+
+        r2 = self.client.post(reverse('captcha-test'), dict(captcha_0=hash_2,captcha_1=store_2.response, subject='xxx', sender='asasd@asdasd.com'))
+        self.failUnlessEqual(r2.status_code, 200)
+        self.assertTrue(r2.content.find('Form validated') > 0)
+        
+def trivial_challenge():
+    return 'trivial','trivial'
