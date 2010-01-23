@@ -21,6 +21,8 @@ class CaptchaCase(TestCase):
         self.chars_store, created = CaptchaStore.objects.get_or_create(challenge=self.chars_challenge[0],response=self.chars_challenge[1])
         self.unicode_store, created = CaptchaStore.objects.get_or_create(challenge=self.unicode_challenge[0],response=self.unicode_challenge[1])
         
+        
+        
 
     def testImages(self):
         for key in (self.math_store.hashkey, self.chars_store.hashkey, self.default_store.hashkey, self.unicode_store.hashkey):
@@ -90,3 +92,11 @@ class CaptchaCase(TestCase):
         # empty answer
         r = self.client.post(reverse('captcha-test-custom-error-message'), dict(captcha_0='abc',captcha_1=''))
         self.assertFormError(r,'form','captcha',_('This field is required.'))
+
+    def testRepeatedChallenge(self):
+        store = CaptchaStore.objects.create(challenge='xxx',response='xxx')
+        try:
+            store2 = CaptchaStore.objects.create(challenge='xxx',response='xxx')
+        except Exception:
+            self.fail()
+        
