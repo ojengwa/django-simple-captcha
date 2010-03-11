@@ -34,10 +34,11 @@ def captcha_image(request,key):
         charimage = Image.new('L', font.getsize(' %s '%char), '#000000')
         chardraw = ImageDraw.Draw(charimage)
         chardraw.text((0,0), ' %s '%char, font=font, fill='#ffffff')
-        if PIL_VERSION >= 116:
-            charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), expand=0, resample=Image.BICUBIC)
-        else:
-            charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), resample=Image.BICUBIC)
+        if settings.CAPTCHA_LETTER_ROTATION:
+            if PIL_VERSION >= 116:
+                charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), expand=0, resample=Image.BICUBIC)
+            else:
+                charimage = charimage.rotate(random.randrange( *settings.CAPTCHA_LETTER_ROTATION ), resample=Image.BICUBIC)
         charimage = charimage.crop(charimage.getbbox())
         maskimage = Image.new('L', size)
         

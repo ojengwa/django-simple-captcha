@@ -100,6 +100,7 @@ class CaptchaCase(TestCase):
         except Exception:
             self.fail()
         
+        
     def testRepeatedChallengeFormSubmit(self):   
         settings.CAPTCHA_CHALLENGE_FUNCT = 'captcha.tests.trivial_challenge'     
         
@@ -133,6 +134,20 @@ class CaptchaCase(TestCase):
         r2 = self.client.post(reverse('captcha-test'), dict(captcha_0=hash_2,captcha_1=store_2.response, subject='xxx', sender='asasd@asdasd.com'))
         self.failUnlessEqual(r2.status_code, 200)
         self.assertTrue(r2.content.find('Form validated') > 0)
+
+    def testOutputFormat(self):
+        settings.CAPTCHA_OUTPUT_FORMAT =  u'%(image)s<p>Hello, captcha world</p>%(hidden_field)s%(text_field)s'
+        r = self.client.get(reverse('captcha-test'))
+        self.failUnlessEqual(r.status_code, 200)
+        self.assertTrue('<p>Hello, captcha world</p>' in r.content)
+
+    def testInvalidOutputFormat(self):
+        settings.CAPTCHA_OUTPUT_FORMAT =  u'%(image)s'
+        try:
+            r = self.client.get(reverse('captcha-test'))
+            self.fail()
+        except KeyError:
+            pass
         
 def trivial_challenge():
     return 'trivial','trivial'

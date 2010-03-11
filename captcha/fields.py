@@ -15,12 +15,24 @@ class CaptchaTextInput(MultiWidget):
             HiddenInput(attrs),
             TextInput(attrs),
         )
+        
+        for key in ('image','hidden_field','text_field'):
+            if '%%(%s)s'%key not in settings.CAPTCHA_OUTPUT_FORMAT:
+                raise KeyError('All of %s must be present in your CAPTCHA_OUTPUT_FORMAT setting. Could not find %s' %(
+                    ', '.join(['%%(%s)s'%k for k in ('image','hidden_field','text_field')]),
+                    '%%(%s)s'%key
+                ))
+                
         super(CaptchaTextInput,self).__init__(widgets,attrs)
     
     def decompress(self,value):
         if value:
             return value.split(',')
         return [None,None]
+    
+    def format_output(self, rendered_widgets):
+        hidden_field, text_field = rendered_widgets
+        return settings.CAPTCHA_OUTPUT_FORMAT %dict(image=self.image_and_audio, hidden_field=hidden_field, text_field=text_field)
         
     def render(self, name, value, attrs=None):
         challenge,response= settings.get_challenge()()
@@ -29,14 +41,12 @@ class CaptchaTextInput(MultiWidget):
         key = store.hashkey
         value = [key, u'']
         
-        ret = '<img src="%s" alt="captcha" class="captcha" />' %reverse('captcha-image',kwargs=dict(key=key))
+        self.image_and_audio = '<img src="%s" alt="captcha" class="captcha" />' %reverse('captcha-image',kwargs=dict(key=key))
         if settings.CAPTCHA_FLITE_PATH:
-            ret = '<a href="%s" title="%s">%s</a>' %( reverse('captcha-audio', kwargs=dict(key=key)), unicode(_('Play captcha as audio file')), ret)
+            self.image_and_audio = '<a href="%s" title="%s">%s</a>' %( reverse('captcha-audio', kwargs=dict(key=key)), unicode(_('Play captcha as audio file')), ret)
+        #fields = super(CaptchaTextInput, self).render(name, value, attrs=attrs)
         
-        if settings.CAPTCHA_IMAGE_BEFORE_FIELD:
-            return mark_safe(ret + super(CaptchaTextInput, self).render(name, value, attrs=attrs))
-        else:
-            return mark_safe(super(CaptchaTextInput, self).render(name, value, attrs=attrs)+ret)
+        return super(CaptchaTextInput, self).render(name, value, attrs=attrs)
 
 class CaptchaField(MultiValueField):
     widget=CaptchaTextInput
