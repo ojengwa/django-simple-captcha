@@ -2,9 +2,14 @@ from cStringIO import StringIO
 from captcha.models import CaptchaStore
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
-import Image,ImageDraw,ImageFont,ImageFilter,random
 from captcha.conf import settings
-import re
+import re, random
+
+try:
+    import Image, ImageDraw, ImageFont, ImageFilter
+except ImportError:
+    from PIL import Image, ImageDraw, ImageFont, ImageFilter
+
 
 NON_DIGITS_RX = re.compile('[^\d]')
 

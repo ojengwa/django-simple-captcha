@@ -47,5 +47,8 @@ def noise_dots(draw,image):
     return draw
 
 def post_smooth(image):
-    import ImageFilter
+    try:
+        import ImageFilter
+    except ImportError:
+        from PIL import ImageFilter
     return image.filter(ImageFilter.SMOOTH)
