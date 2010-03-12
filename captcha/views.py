@@ -71,8 +71,8 @@ def captcha_audio(request,key):
         text=store.challenge
         if 'captcha.helpers.math_challenge' == settings.CAPTCHA_CHALLENGE_FUNCT:
             text = text.replace('*','times').replace('-','minus')
-        elif 'captcha.helpers.random_char_challenge' == settings.CAPTCHA_CHALLENGE_FUNCT:
-            text = '.'.join(list(text))
+        else:
+            text = ', '.join(list(text))
             
         import tempfile, os
     
