@@ -4,6 +4,9 @@ from captcha.models import CaptchaStore
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
+
 import datetime
 
 
@@ -146,8 +149,9 @@ class CaptchaCase(TestCase):
         try:
             r = self.client.get(reverse('captcha-test'))
             self.fail()
-        except KeyError:
-            pass
-        
+        except ImproperlyConfigured,e:
+            self.failUnless('CAPTCHA_OUTPUT_FORMAT' in e.message)
+
+
 def trivial_challenge():
     return 'trivial','trivial'

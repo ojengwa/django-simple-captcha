@@ -1,6 +1,7 @@
 from django.forms.fields import CharField, MultiValueField
 from django.forms import ValidationError
 from django.forms.widgets import TextInput, MultiWidget, HiddenInput
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -18,10 +19,11 @@ class CaptchaTextInput(MultiWidget):
         
         for key in ('image','hidden_field','text_field'):
             if '%%(%s)s'%key not in settings.CAPTCHA_OUTPUT_FORMAT:
-                raise KeyError('All of %s must be present in your CAPTCHA_OUTPUT_FORMAT setting. Could not find %s' %(
+                raise ImproperlyConfigured('All of %s must be present in your CAPTCHA_OUTPUT_FORMAT setting. Could not find %s' %(
                     ', '.join(['%%(%s)s'%k for k in ('image','hidden_field','text_field')]),
                     '%%(%s)s'%key
                 ))
+        
                 
         super(CaptchaTextInput,self).__init__(widgets,attrs)
     
@@ -35,6 +37,13 @@ class CaptchaTextInput(MultiWidget):
         return settings.CAPTCHA_OUTPUT_FORMAT %dict(image=self.image_and_audio, hidden_field=hidden_field, text_field=text_field)
         
     def render(self, name, value, attrs=None):
+        
+        try:
+            image_url = reverse('captcha-image', args=('dummy',))
+        except Exception,e:
+            raise ImproperlyConfigured('Make sure you\'ve included captcha.urls as explained in the INSTALLATION section on http://code.google.com/p/django-simple-captcha/')
+        
+        
         challenge,response= settings.get_challenge()()
         
         store = CaptchaStore.objects.create(challenge=challenge,response=response)
