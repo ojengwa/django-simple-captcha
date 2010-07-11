@@ -11,20 +11,21 @@ from captcha.helpers import *
 import datetime
 
 class CaptchaTextInput(MultiWidget):
-    def __init__(self,attrs=None):
+    def __init__(self,attrs=None, **kwargs):
+        self._args = kwargs
         widgets = (
             HiddenInput(attrs),
             TextInput(attrs),
         )
         
         for key in ('image','hidden_field','text_field'):
-            if '%%(%s)s'%key not in settings.CAPTCHA_OUTPUT_FORMAT:
+            if '%%(%s)s'%key not in self._args.get('output_format'):
                 raise ImproperlyConfigured('All of %s must be present in your CAPTCHA_OUTPUT_FORMAT setting. Could not find %s' %(
                     ', '.join(['%%(%s)s'%k for k in ('image','hidden_field','text_field')]),
                     '%%(%s)s'%key
                 ))
         
-                
+        
         super(CaptchaTextInput,self).__init__(widgets,attrs)
     
     def decompress(self,value):
@@ -34,7 +35,7 @@ class CaptchaTextInput(MultiWidget):
     
     def format_output(self, rendered_widgets):
         hidden_field, text_field = rendered_widgets
-        return settings.CAPTCHA_OUTPUT_FORMAT %dict(image=self.image_and_audio, hidden_field=hidden_field, text_field=text_field)
+        return self._args.get('output_format') %dict(image=self.image_and_audio, hidden_field=hidden_field, text_field=text_field)
         
     def render(self, name, value, attrs=None):
         
@@ -58,7 +59,6 @@ class CaptchaTextInput(MultiWidget):
         return super(CaptchaTextInput, self).render(name, value, attrs=attrs)
 
 class CaptchaField(MultiValueField):
-    widget=CaptchaTextInput
     
     def __init__(self, *args,**kwargs):
         fields = (
@@ -70,8 +70,15 @@ class CaptchaField(MultiValueField):
                 kwargs['error_messages'] = dict()
             kwargs['error_messages'].update(dict(invalid=_('Invalid CAPTCHA')))
 
-            
-        super(CaptchaField,self).__init__(fields=fields, *args, **kwargs)
+        widget_kwargs = dict(
+            output_format = kwargs.get('output_format',None) or settings.CAPTCHA_OUTPUT_FORMAT
+        )
+        for k in ('output_format',):
+            if k in kwargs:
+                del(kwargs[k])
+        
+        super(CaptchaField,self).__init__(fields=fields, widget=CaptchaTextInput(**widget_kwargs), *args, **kwargs)
+
     
     def compress(self,data_list):
         if data_list:

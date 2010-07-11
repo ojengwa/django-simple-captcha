@@ -152,6 +152,15 @@ class CaptchaCase(TestCase):
         except ImproperlyConfigured,e:
             self.failUnless('CAPTCHA_OUTPUT_FORMAT' in e.message)
 
+    def testPerFormFormat(self):
+        settings.CAPTCHA_OUTPUT_FORMAT =  u'%(image)s testCustomFormatString %(hidden_field)s %(text_field)s'
+        r = self.client.get(reverse('captcha-test'))
+        self.failUnless('testCustomFormatString' in r.content)
+        r = self.client.get(reverse('test_per_form_format'))
+        self.failUnless('testPerFieldCustomFormatString' in r.content)
+        
+        
+
 
 def trivial_challenge():
     return 'trivial','trivial'

@@ -56,3 +56,21 @@ def test_custom_error_message(request):
 
     t = loader.get_template_from_string(TEST_TEMPLATE)
     return HttpResponse(t.render(RequestContext(request, locals())))
+
+
+
+def test_per_form_format(request):
+    
+    class CaptchaTestForm(forms.Form):
+        captcha = CaptchaField(help_text='asdasd', error_messages=dict(invalid='TEST CUSTOM ERROR MESSAGE'), \
+            output_format=u'%(image)s testPerFieldCustomFormatString %(hidden_field)s %(text_field)s' )
+
+    if request.POST:
+        form = CaptchaTestForm(request.POST)
+        if form.is_valid():
+            passed = True
+    else:
+        form = CaptchaTestForm()
+
+    t = loader.get_template_from_string(TEST_TEMPLATE)
+    return HttpResponse(t.render(RequestContext(request, locals())))
