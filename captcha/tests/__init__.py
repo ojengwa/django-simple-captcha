@@ -150,7 +150,7 @@ class CaptchaCase(TestCase):
             r = self.client.get(reverse('captcha-test'))
             self.fail()
         except ImproperlyConfigured,e:
-            self.failUnless('CAPTCHA_OUTPUT_FORMAT' in e.message)
+            self.failUnless('CAPTCHA_OUTPUT_FORMAT' in unicode(e))
 
     def testPerFormFormat(self):
         settings.CAPTCHA_OUTPUT_FORMAT =  u'%(image)s testCustomFormatString %(hidden_field)s %(text_field)s'
