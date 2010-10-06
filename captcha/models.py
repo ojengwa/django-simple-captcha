@@ -30,7 +30,7 @@ class CaptchaStore(models.Model):
         if not self.hashkey:
             key_ = unicodedata.normalize('NFKD', str(randrange(0,MAX_RANDOM_KEY)) + str(time.time()) + unicode(self.challenge)).encode('ascii', 'ignore') + unicodedata.normalize('NFKD', unicode(self.response)).encode('ascii', 'ignore')
             if hashlib:
-                self.hashkey = hashlib.new('sha', key_).hexdigest()
+                self.hashkey = hashlib.sha1(key_).hexdigest()
             else:
                 self.hashkey = sha.new(key_).hexdigest()
             del(key_)
