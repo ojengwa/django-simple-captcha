@@ -6,9 +6,9 @@ from captcha.conf import settings
 import re, random
 
 try:
-    import Image, ImageDraw, ImageFont, ImageFilter
+    import Image, ImageDraw, ImageFont
 except ImportError:
-    from PIL import Image, ImageDraw, ImageFont, ImageFilter
+    from PIL import Image, ImageDraw, ImageFont
 
 
 NON_DIGITS_RX = re.compile('[^\d]')
@@ -23,7 +23,7 @@ def captcha_image(request,key):
         font = ImageFont.load(settings.CAPTCHA_FONT_PATH)
     
     size = font.getsize(text)
-    size = (size[0]*2,size[1])
+    size = (size[0]*2, int(size[1] * 1.2))
     image = Image.new('RGB', size , settings.CAPTCHA_BACKGROUND_COLOR)
     
     try:
@@ -34,7 +34,14 @@ def captcha_image(request,key):
     
     
     xpos = 2
+
+    charlist = []
     for char in text:
+        if char in settings.CAPTCHA_PUNCTUATION and len(charlist) >= 1:
+            charlist[-1]+= char
+        else:
+            charlist.append(char)
+    for char in charlist:
         fgimage = Image.new('RGB', size, settings.CAPTCHA_FOREGROUND_COLOR)
         charimage = Image.new('L', font.getsize(' %s '%char), '#000000')
         chardraw = ImageDraw.Draw(charimage)

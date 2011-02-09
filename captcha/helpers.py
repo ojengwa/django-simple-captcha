@@ -33,6 +33,21 @@ def word_challenge():
             break
     return word.upper(), word.lower()
     
+def huge_words_and_punctuation_challenge():
+    "Yay, undocumneted. Mostly used to test Issue 39 - http://code.google.com/p/django-simple-captcha/issues/detail?id=39"
+    fd = file(settings.CAPTCHA_WORDS_DICTIONARY,'rb')
+    l = fd.readlines()
+    fd.close()
+    word = ''
+    while True:
+        word1 = random.choice(l).strip()
+        word2 = random.choice(l).strip()
+        punct = random.choice(settings.CAPTCHA_PUNCTUATION)
+        word = '%s%s%s'%(word1,punct,word2)
+        if len(word) >= settings.CAPTCHA_DICTIONARY_MIN_LENGTH and len(word) <= settings.CAPTCHA_DICTIONARY_MAX_LENGTH:
+            break
+    return word.upper(), word.lower()
+    
 def noise_arcs(draw,image):
     size = image.size
     draw.arc([-20,-20, size[0],20], 0, 295, fill=settings.CAPTCHA_FOREGROUND_COLOR)
