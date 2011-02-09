@@ -2,12 +2,10 @@ from django.forms.fields import CharField, MultiValueField
 from django.forms import ValidationError
 from django.forms.widgets import TextInput, MultiWidget, HiddenInput
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse,  NoReverseMatch
 from captcha.models import CaptchaStore
 from captcha.conf import settings
-from captcha.helpers import *
 import datetime
 
 class CaptchaTextInput(MultiWidget):
@@ -41,7 +39,7 @@ class CaptchaTextInput(MultiWidget):
         
         try:
             image_url = reverse('captcha-image', args=('dummy',))
-        except Exception,e:
+        except NoReverseMatch,e:
             raise ImproperlyConfigured('Make sure you\'ve included captcha.urls as explained in the INSTALLATION section on http://code.google.com/p/django-simple-captcha/')
         
         
