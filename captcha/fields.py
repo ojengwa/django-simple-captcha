@@ -43,7 +43,7 @@ class CaptchaTextInput(MultiWidget):
             raise ImproperlyConfigured('Make sure you\'ve included captcha.urls as explained in the INSTALLATION section on http://code.google.com/p/django-simple-captcha/')
         
         
-        challenge,response= settings.get_challenge()()
+        challenge, response = settings.get_challenge()()
         
         store = CaptchaStore.objects.create(challenge=challenge,response=response)
         key = store.hashkey
@@ -52,9 +52,12 @@ class CaptchaTextInput(MultiWidget):
         self.image_and_audio = '<img src="%s" alt="captcha" class="captcha" />' %reverse('captcha-image',kwargs=dict(key=key))
         if settings.CAPTCHA_FLITE_PATH:
             self.image_and_audio = '<a href="%s" title="%s">%s</a>' %( reverse('captcha-audio', kwargs=dict(key=key)), unicode(_('Play captcha as audio file')), self.image_and_audio)
-        #fields = super(CaptchaTextInput, self).render(name, value, attrs=attrs)
         
         return super(CaptchaTextInput, self).render(name, value, attrs=attrs)
+
+    # This probably needs some more love
+    def id_for_label(self, id_):
+        return 'id_captcha_1'
 
 class CaptchaField(MultiValueField):
     

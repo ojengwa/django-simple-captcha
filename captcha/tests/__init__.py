@@ -158,7 +158,11 @@ class CaptchaCase(TestCase):
         self.failUnless('testCustomFormatString' in r.content)
         r = self.client.get(reverse('test_per_form_format'))
         self.failUnless('testPerFieldCustomFormatString' in r.content)
-        
+
+    def testIssue31ProperLabel(self):
+        settings.CAPTCHA_OUTPUT_FORMAT =  u'%(image)s %(hidden_field)s %(text_field)s'
+        r = self.client.get(reverse('captcha-test'))
+        self.failUnless('<label for="id_captcha_1"' in r.content)
         
 
 
